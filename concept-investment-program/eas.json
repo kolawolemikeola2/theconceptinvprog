@@ -6,6 +6,7 @@
   },
   "build": {
     "development": {
+      "node": "22.16.0",
       "developmentClient": true,
       "distribution": "internal",
       "android": {
@@ -13,12 +14,14 @@
       }
     },
     "preview": {
+      "node": "22.16.0",
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
+      "node": "22.16.0",
       "autoIncrement": true,
       "android": {
         "buildType": "apk"

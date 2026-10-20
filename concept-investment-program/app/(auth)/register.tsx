@@ -138,7 +138,7 @@ export default function RegisterScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={s.topBar}>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="Go back"
               onPress={() => router.canGoBack() ? router.back() : router.replace('/login')}
@@ -147,7 +147,7 @@ export default function RegisterScreen() {
               <Ionicons name="arrow-back" size={21} color={C.text} />
             </TouchableOpacity>
             <Text style={[s.topBarTitle, { color: C.text }]}>Create account</Text>
-            <View style={s.topBarSpacer} />
+            <View style={s.topBarSpacer} /> */}
           </View>
 
           <View style={s.intro}>
@@ -278,9 +278,9 @@ export default function RegisterScreen() {
             </TouchableOpacity>
           </View>
           <View style={s.securityNote}>
-            <Ionicons name="shield-checkmark-outline" size={16} color={C.green} />
+            {/* <Ionicons name="shield-checkmark-outline" size={16} color={C.green} /> */}
             <Text style={[s.securityText, { color: C.muted }]}>
-              Your password should be securely handled by your authentication provider and never stored as plain text.
+              {/* Your password should be securely handled by your authentication provider and never stored as plain text. */}
             </Text>
           </View>
         </ScrollView>
