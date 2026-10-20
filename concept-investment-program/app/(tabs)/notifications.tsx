@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { supabase } from '../../lib/supabase';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getPalette, useAppTheme } from '../../constants/app-theme';
 
@@ -16,13 +17,7 @@ type Notice = {
 };
 type Filter = 'All' | 'Unread' | 'Payments' | 'Account';
 
-const initialNotices: Notice[] = [
-  { id: 'n1', type: 'payment', title: 'ROI payment recorded', message: 'Your illustrative October ROI record of $250 has been marked as paid in the sample ledger.', time: '1 Oct 2026 · 9:15 AM', unread: true, amount: '$250' },
-  { id: 'n2', type: 'payment', title: 'Upcoming ROI payment', message: 'Your next scheduled ROI payment is shown as due on 1 November 2026.', time: 'Today · 8:30 AM', unread: true, amount: '$250' },
-  { id: 'n3', type: 'investment', title: 'Investment is active', message: 'Your sample investment contract CIP-2026-001 is currently displayed as active.', time: '28 Sep 2026 · 2:40 PM', unread: true },
-  { id: 'n4', type: 'security', title: 'Keep your account secure', message: 'Never share your password, verification code, or account details with anyone.', time: '25 Sep 2026 · 10:00 AM', unread: false },
-  { id: 'n5', type: 'system', title: 'Welcome to The Concept', message: 'Your investor portal brings your investment summary, ROI history, and profile together in one place.', time: '20 Sep 2026 · 11:20 AM', unread: false },
-];
+const initialNotices: Notice[] = [];
 
 const iconFor = (type: NotificationType): React.ComponentProps<typeof Ionicons>['name'] => {
   if (type === 'payment') return 'cash-outline';
@@ -35,7 +30,27 @@ export default function NotificationsScreen() {
   const { isDark } = useAppTheme();
   const C = getPalette(isDark);
   const styles = makeStyles(isDark);
-  const [notices, setNotices] = useState(initialNotices);
+  const [notices, setNotices] = useState<Notice[]>(initialNotices);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
+      const { data, error } = await supabase.from('notifications')
+        .select('id,title,body,type,read_at,created_at')
+        .eq('user_id', auth.user.id).order('created_at', { ascending: false }).limit(100);
+      if (error) throw error;
+      if (!alive) return;
+      setNotices((data || []).map((n: any) => ({
+        id: n.id, type: String(n.type || '').includes('roi') || String(n.type || '').includes('payment') ? 'payment' :
+          String(n.type || '').includes('investment') ? 'investment' :
+          String(n.type || '').includes('security') || String(n.type || '').includes('suspend') ? 'security' : 'system',
+        title: n.title, message: n.body, time: new Date(n.created_at).toLocaleString(),
+        unread: !n.read_at,
+      } as Notice)));
+    })().catch((error) => console.warn('Could not load notifications:', error));
+    return () => { alive = false; };
+  }, []);
   const [filter, setFilter] = useState<Filter>('All');
   const unreadCount = notices.filter(item => item.unread).length;
   const filtered = useMemo(() => notices.filter(item => {
@@ -45,8 +60,17 @@ export default function NotificationsScreen() {
     return true;
   }), [notices, filter]);
 
-  const markRead = (id: string) => setNotices(current => current.map(item => item.id === id ? { ...item, unread: false } : item));
-  const markAllRead = () => setNotices(current => current.map(item => ({ ...item, unread: false })));
+  const markRead = (id: string) => {
+    setNotices(current => current.map(item => item.id === id ? { ...item, unread: false } : item));
+    void supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
+  };
+  const markAllRead = () => {
+    setNotices(current => current.map(item => ({ ...item, unread: false })));
+    void (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (auth.user) await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('user_id', auth.user.id).is('read_at', null);
+    })();
+  };
 
   return (
     <View style={styles.screen}>
@@ -108,10 +132,10 @@ export default function NotificationsScreen() {
           </TouchableOpacity>
         ))}
 
-        <View style={styles.disclaimer}>
+        {/* <View style={styles.disclaimer}>
           <Ionicons name="information-circle-outline" size={18} color={C.blue} />
-          <Text style={styles.disclaimerText}>These are sample notifications for the interface preview. Live alerts should be connected to your app’s backend and verified transaction records.</Text>
-        </View>
+          <Text style={styles.disclaimerText}>These notifications are loaded from your authenticated account. Push delivery depends on device notification permissions.</Text>
+        </View> */}
       </ScrollView>
     </View>
   );

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "793286843060",
+    "project_id": "the-concept-investment",
+    "storage_bucket": "the-concept-investment.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:793286843060:android:5b4bd3d5dd45266c6b15e1",
+        "android_client_info": {
+          "package_name": "com.conceptinvestmentprogram.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtriNzWV8LwQigZvAtVFjqE7XLMTG0KXE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

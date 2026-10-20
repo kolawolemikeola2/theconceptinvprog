@@ -85,7 +85,7 @@ export async function getMyInvestments() {
 
 export async function getMyRoiPayments() {
   const { data, error } = await supabase.from('roi_payments')
-    .select('id,investment_id,period_month,due_date,amount,currency,status,paid_at')
+    .select('id,investment_id,period_month,due_date,amount,currency,status,paid_at,payout_reference,reinvested_at,payout_notes')
     .order('due_date', { ascending: true });
   if (error) throw error;
   return data ?? [];
